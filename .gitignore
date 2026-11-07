@@ -46,3 +46,6 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Figma reference renders (not part of the app)
+.figma_ref/
