@@ -32,10 +32,18 @@ class AppButton extends StatelessWidget {
     final isPrimary = variant == AppButtonVariant.primary;
     final enabled = onPressed != null;
 
+    // Figma "State=Disabled" for the filled button: light grey fill and
+    // grey label. The outline button just fades.
+    final disabledPrimary = isPrimary && !enabled;
+
     return Opacity(
-      opacity: enabled ? 1 : 0.4,
+      opacity: enabled || isPrimary ? 1 : 0.4,
       child: Material(
-        color: isPrimary ? AppColors.buttonBlack : AppColors.background,
+        color: disabledPrimary
+            ? AppColors.buttonBlackDisable
+            : isPrimary
+                ? AppColors.buttonBlack
+                : AppColors.background,
         shape: RoundedRectangleBorder(
           borderRadius: _radius,
           side: isPrimary
@@ -53,7 +61,7 @@ class AppButton extends StatelessWidget {
             // Figma uses an inner shadow (white 30%, y: 3, blur: 6) on the
             // filled button. Flutter has no inset shadow, so a short top
             // highlight gradient reproduces the same look.
-            foregroundDecoration: isPrimary
+            foregroundDecoration: isPrimary && enabled
                 ? const BoxDecoration(
                     borderRadius: _radius,
                     gradient: LinearGradient(
@@ -67,9 +75,11 @@ class AppButton extends StatelessWidget {
             child: Text(
               label,
               style: AppTextStyles.body1Medium.copyWith(
-                color: isPrimary
-                    ? AppColors.textOnButton
-                    : AppColors.headingBlack,
+                color: disabledPrimary
+                    ? AppColors.textDisable
+                    : isPrimary
+                        ? AppColors.textOnButton
+                        : AppColors.headingBlack,
               ),
             ),
           ),
