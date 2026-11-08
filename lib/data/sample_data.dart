@@ -1,5 +1,7 @@
 import 'invites.dart';
 import 'models.dart';
+import 'notifications.dart';
+import 'preferences.dart';
 import 'pear_repository.dart';
 
 /// The Home states drawn in Figma, as sample repositories for previews and
@@ -19,12 +21,14 @@ abstract final class SampleData {
     id: 'me',
     name: 'Olivia Rhye',
     email: 'olivia@gmail.com',
+    phone: '4155550132',
     isMe: true,
   );
   static const Person sam = Person(
     id: 'sam',
     name: 'Sam',
     email: 'sam@gmail.com',
+    phone: '4155550148',
   );
 
   /// Sam's invitation, for the "Join Sam's shared lists?" screens.
@@ -195,11 +199,77 @@ abstract final class SampleData {
       me: olivia,
       partner: shared ? sam : null,
       isPro: shared,
+      billing: shared ? ProBilling.yearly : null,
+      invites: state == SampleState.shared
+          ? [
+              Invite(
+                id: 'invite-lena',
+                name: 'Lena',
+                address: 'Lena@Gmail.com',
+                lists: {...ListKind.values},
+                status: InviteStatus.sent,
+                sentAt: now.subtract(const Duration(days: 2)),
+              ),
+            ]
+          : null,
+      notifications: state == SampleState.shared ? _notifications(now) : null,
       lists: [weekly, ...otherLists, ...collections.lists],
       activities: [...activities, ...collections.activities]
         ..sort((a, b) => b.at.compareTo(a.at)),
     );
   }
+
+  /// Sam's invitation as seen by someone who already has an account.
+  static const IncomingInvite samInviteSignedIn = IncomingInvite(
+    id: 'invite-from-sam-2',
+    from: sam,
+    lists: {ListKind.shopping, ListKind.wishlist, ListKind.places},
+    summaries: {
+      ListKind.shopping: (lists: 2, items: 14),
+      ListKind.wishlist: (lists: 1, items: 12),
+      ListKind.places: (lists: 1, items: 4),
+    },
+  );
+
+  /// Figma "Notification - filled".
+  static List<AppNotification> _notifications(DateTime now) => [
+        AppNotification(
+          id: 'n1',
+          type: NotificationType.invite,
+          title: 'Sam invited you to Date nights',
+          body: 'Places \u00b7 7 spots to try together',
+          at: now.subtract(const Duration(minutes: 5)),
+          actor: sam,
+          invite: samInviteSignedIn,
+        ),
+        AppNotification(
+          id: 'n2',
+          type: NotificationType.completed,
+          title: 'Sam checked off all 9 items.',
+          body: 'Places \u00b7 7 spots to try together',
+          at: now.subtract(const Duration(minutes: 15)),
+          actor: sam,
+          read: true,
+        ),
+        AppNotification(
+          id: 'n3',
+          type: NotificationType.wishBought,
+          title: 'A wish was bought',
+          body: 'Something from Birthday ideas is taken care of. We won\u2019t '
+              'spoil which one.',
+          at: now.subtract(const Duration(minutes: 25)),
+          read: true,
+        ),
+        AppNotification(
+          id: 'n4',
+          type: NotificationType.wishBought,
+          title: 'A wish was bought',
+          body: 'Something from Our home is taken care of. We won\u2019t '
+              'spoil which one.',
+          at: now.subtract(const Duration(hours: 1)),
+          read: true,
+        ),
+      ];
 
   /// Wish lists and place lists (Figma pages "Wish List" and "Places List").
   static ({List<ShoppingList> lists, List<Activity> activities}) _collections({

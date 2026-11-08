@@ -73,6 +73,30 @@ abstract final class AppIcons {
   static const String map16 = 'assets/icons/map_16.svg';
   static const String checkCircle = 'assets/icons/check_circle.svg';
   static const String openExternal = 'assets/icons/export.svg';
+
+  // Profile & notifications (20px row icons unless noted)
+  static const String edit20 = 'assets/icons/edit_20.svg';
+  static const String users20 = 'assets/icons/users_20.svg';
+  static const String user20 = 'assets/icons/user_20.svg';
+  static const String security = 'assets/icons/security.svg';
+  static const String bell20 = 'assets/icons/bell_20.svg';
+  static const String moon = 'assets/icons/moon.svg';
+  static const String translate = 'assets/icons/translate.svg';
+  static const String sms = 'assets/icons/sms.svg';
+  static const String infoCircle = 'assets/icons/info_circle.svg';
+  static const String star = 'assets/icons/star.svg';
+  static const String crown20 = 'assets/icons/crown_20.svg';
+  static const String note = 'assets/icons/note.svg';
+  static const String lock20 = 'assets/icons/lock_20.svg';
+  static const String call = 'assets/icons/call.svg';
+  static const String setting = 'assets/icons/setting.svg';
+  static const String minusCircle = 'assets/icons/minus_circle.svg'; // 24
+  static const String plusCircle = 'assets/icons/plus_circle.svg'; // 24
+  static const String proPlan = 'assets/icons/pro_plan.svg'; // 24
+  static const String verified = 'assets/icons/verified.svg'; // 12
+  static const String logout = 'assets/icons/logout.svg'; // 18
+  static const String notifCheck = 'assets/icons/notif_check.svg'; // 18
+  static const String notifGift = 'assets/icons/notif_gift.svg'; // 18
 }
 
 abstract final class AppImages {
@@ -95,4 +119,11 @@ abstract final class AppImages {
   static const String inviteInvalid =
       'assets/images/onboarding/invite_invalid.svg';
   static const String contacts = 'assets/images/onboarding/contacts.svg';
+
+  /// Empty notification list (Figma: "empty-sleepy-bell").
+  static const String emptyNotifications =
+      'assets/images/profile/empty_notifications.svg';
+
+  /// "Delete your account?" sheet.
+  static const String deleteWarning = 'assets/images/profile/delete_warning.svg';
 }

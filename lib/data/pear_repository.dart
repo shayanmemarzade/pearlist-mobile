@@ -5,6 +5,8 @@ import '../features/add_list/domain/new_list.dart';
 import '../features/collection/domain/new_collection_item.dart';
 import 'invites.dart';
 import 'models.dart';
+import 'notifications.dart';
+import 'preferences.dart';
 import 'smart_aisle.dart';
 
 /// In-memory store for lists, items and activity.
@@ -17,25 +19,39 @@ class PearRepository extends ChangeNotifier {
   PearRepository({
     // Callers pass `me:`; the private field is set directly.
     required this._me,
-    this.partner,
+    this._partner,
     this.isPro = false,
+    this.billing,
     List<ShoppingList>? lists,
     List<Activity>? activities,
     List<Invite>? invites,
+    List<AppNotification>? notifications,
   })  : _lists = lists ?? [],
         _activities = activities ?? [],
-        _invites = invites ?? [];
+        _invites = invites ?? [],
+        _notifications = notifications ?? [];
 
   Person _me;
 
   /// The signed-in user.
   Person get me => _me;
 
+  Person? _partner;
+
   /// The person the user shops with, if they have one.
-  final Person? partner;
+  Person? get partner => _partner;
 
   /// Free-plan lists are private; Pro lets you share.
   bool isPro;
+
+  /// How Pro is billed; null on the free plan.
+  ProBilling? billing;
+
+  final List<AppNotification> _notifications;
+
+  ThemePreference _theme = ThemePreference.system;
+  AppLanguage _language = AppLanguage.en;
+  NotificationPrefs _notificationPrefs = const NotificationPrefs();
 
   final List<ShoppingList> _lists;
   final List<Activity> _activities;
@@ -344,12 +360,18 @@ class PearRepository extends ChangeNotifier {
 
   /// Saves what the user entered while signing up. Null leaves a field as
   /// it is; an empty [email] clears it.
-  void updateProfile({String? name, String? email, String? avatarUrl}) {
+  void updateProfile({
+    String? name,
+    String? email,
+    String? phone,
+    String? avatarUrl,
+  }) {
     final current = _me;
     _me = Person(
       id: current.id,
       name: name ?? current.name,
       email: email == null ? current.email : (email.isEmpty ? null : email),
+      phone: phone ?? current.phone,
       avatarUrl: avatarUrl ?? current.avatarUrl,
       isMe: true,
     );
@@ -371,8 +393,9 @@ class PearRepository extends ChangeNotifier {
 
   /// Starts the Pro subscription; invites waiting for it go out now.
   // TODO: replace with the store purchase / receipt check.
-  void upgradeToPro() {
+  void upgradeToPro({ProBilling billing = ProBilling.yearly}) {
     isPro = true;
+    this.billing = billing;
     for (var i = 0; i < _invites.length; i++) {
       if (_invites[i].status == InviteStatus.awaitingUpgrade) {
         _invites[i] = _invites[i].copyWith(status: InviteStatus.sent);
@@ -384,6 +407,7 @@ class PearRepository extends ChangeNotifier {
   /// The subscription ended. Sent invites stay valid.
   void cancelPro() {
     isPro = false;
+    billing = null;
     notifyListeners();
   }
 
@@ -443,6 +467,90 @@ class PearRepository extends ChangeNotifier {
         ),
       );
     }
+    notifyListeners();
+  }
+
+  // ---------------------------------------------------------------- connections
+
+  /// Everyone who shares at least one of your lists, plus your partner.
+  List<Person> get connections {
+    final byId = <String, Person>{};
+    final partner = _partner;
+    if (partner != null && !partner.isMe) byId[partner.id] = partner;
+    for (final list in _lists) {
+      for (final person in list.activeMembers) {
+        if (!person.isMe) byId.putIfAbsent(person.id, () => person);
+      }
+    }
+    return byId.values.toList();
+  }
+
+  /// Invites still waiting for the person to join.
+  List<Invite> get pendingInvites =>
+      _invites.where((i) => i.status != InviteStatus.joined).toList();
+
+  /// Takes someone off every list you share with them.
+  // TODO: the API should revoke their access server-side.
+  void removeConnection(String personId) {
+    for (final list in _lists) {
+      if (list.owner.id == personId) continue; // Their own lists stay theirs.
+      list.members.removeWhere((p) => p.id == personId);
+      list.revokedIds.remove(personId);
+      if (list.members.length < 2) list.shared = false;
+    }
+    if (_partner?.id == personId) _partner = null;
+    notifyListeners();
+  }
+
+  void cancelInvite(String inviteId) {
+    _invites.removeWhere((i) => i.id == inviteId);
+    notifyListeners();
+  }
+
+  // ---------------------------------------------------------------- notifications
+
+  List<AppNotification> get notifications => List.unmodifiable(_notifications);
+
+  int get unreadCount => _notifications.where((n) => !n.read).length;
+
+  void markNotificationRead(String id) {
+    final index = _notifications.indexWhere((n) => n.id == id);
+    if (index < 0 || _notifications[index].read) return;
+    _notifications[index] = _notifications[index].copyWith(read: true);
+    notifyListeners();
+  }
+
+  void markAllNotificationsRead() {
+    for (var i = 0; i < _notifications.length; i++) {
+      _notifications[i] = _notifications[i].copyWith(read: true);
+    }
+    notifyListeners();
+  }
+
+  void clearNotifications() {
+    _notifications.clear();
+    notifyListeners();
+  }
+
+  // ---------------------------------------------------------------- settings
+
+  ThemePreference get theme => _theme;
+  AppLanguage get language => _language;
+  NotificationPrefs get notificationPrefs => _notificationPrefs;
+
+  // TODO: persist settings (shared_preferences / the API).
+  void setTheme(ThemePreference value) {
+    _theme = value;
+    notifyListeners();
+  }
+
+  void setLanguage(AppLanguage value) {
+    _language = value;
+    notifyListeners();
+  }
+
+  void setNotificationPrefs(NotificationPrefs value) {
+    _notificationPrefs = value;
     notifyListeners();
   }
 }

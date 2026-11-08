@@ -65,6 +65,7 @@ class IncomingInvite {
     required this.from,
     required this.lists,
     this.valid = true,
+    this.summaries = const {},
   });
 
   final String id;
@@ -75,4 +76,8 @@ class IncomingInvite {
 
   /// False when it expired or was cancelled ("Invite no longer valid").
   final bool valid;
+
+  /// What's shared per tab, e.g. "2 lists included · 14 items" (Figma
+  /// "Invitation - old user"). Empty for a link opened before signing up.
+  final Map<ListKind, ({int lists, int items})> summaries;
 }

@@ -24,6 +24,7 @@ class Person {
     required this.id,
     required this.name,
     this.email,
+    this.phone,
     this.avatarUrl,
     this.isMe = false,
   });
@@ -31,6 +32,9 @@ class Person {
   final String id;
   final String name;
   final String? email;
+
+  /// 10 US digits.
+  final String? phone;
   final String? avatarUrl;
   final bool isMe;
 

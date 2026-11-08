@@ -38,6 +38,7 @@ abstract final class AuthNavigation {
       ..updateProfile(
         name: draft.name,
         email: draft.email ?? '',
+        phone: draft.phone.isEmpty ? null : draft.phone,
         avatarUrl: draft.photoPath,
       )
       ..setFavoriteStores(draft.stores);

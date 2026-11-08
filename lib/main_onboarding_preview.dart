@@ -102,6 +102,14 @@ class _Launcher extends StatelessWidget {
         () => openIncomingInvite(context, SampleData.samInvite),
       ),
       (
+        'Invitation — signed-in user',
+        () => openIncomingInvite(
+              context,
+              SampleData.samInviteSignedIn,
+              signedIn: true,
+            ),
+      ),
+      (
         'Invite no longer valid',
         () => openIncomingInvite(
               context,

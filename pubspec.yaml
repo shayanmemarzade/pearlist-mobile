@@ -68,6 +68,7 @@ flutter:
     - assets/images/home/
     - assets/images/list/
     - assets/images/onboarding/
+    - assets/images/profile/
     - assets/splash/
 
   # To add assets to your application, add an assets section, like this:

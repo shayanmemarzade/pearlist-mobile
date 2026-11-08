@@ -12,6 +12,8 @@ import '../../add_list/presentation/add_list_sheet.dart';
 import '../../collection/domain/kind_copy.dart';
 import '../../collection/presentation/add_collection_item_sheet.dart';
 import '../../list/presentation/list_screen.dart';
+import '../../notifications/presentation/notifications_screen.dart';
+import '../../profile/presentation/profile_screen.dart';
 import '../domain/home_models.dart';
 import 'widgets/active_list_card.dart';
 import 'widgets/home_top_bar.dart';
@@ -106,12 +108,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   bottom: false,
                   child: HomeTopBar(
                     title: kind.pageTitle,
-                    onProfile: () {
-                      // TODO: open profile.
-                    },
-                    onNotifications: () {
-                      // TODO: open notifications.
-                    },
+                    hasUnread: PearScope.of(context).unreadCount > 0,
+                    onProfile: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const ProfileScreen(),
+                      ),
+                    ),
+                    onNotifications: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const NotificationsScreen(),
+                      ),
+                    ),
                   ),
                 ),
                 Expanded(

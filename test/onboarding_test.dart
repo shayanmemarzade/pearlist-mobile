@@ -76,8 +76,9 @@ void main() {
         for (var i = 0; i < kProInviteLimit + 2; i++)
           InviteTarget(name: 'P$i', address: '(415) 555-01$i$i'),
       ];
+      final left = repo.invitesLeft; // The sample already invited Lena.
       final sent = repo.sendInvites(targets, {...ListKind.values});
-      expect(sent, hasLength(kProInviteLimit));
+      expect(sent, hasLength(left));
       expect(sent.every((i) => i.status == InviteStatus.sent), isTrue);
       expect(repo.invitesLeft, 0);
       expect(repo.sendInvites(targets, {ListKind.shopping}), isEmpty);

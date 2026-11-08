@@ -15,6 +15,9 @@ enum AppButtonVariant {
 
   /// Green outline ("Add item", "Clear bought items", "Invite a partner").
   greenOutline,
+
+  /// Red outline ("Sign out").
+  dangerOutline,
 }
 
 /// Full-width, 46px-tall pill button from the Figma design system.
@@ -65,6 +68,10 @@ class AppButton extends StatelessWidget {
         background = AppColors.background;
         foreground = AppColors.buttonPrimary;
         side = const BorderSide(color: AppColors.buttonPrimary);
+      case AppButtonVariant.dangerOutline:
+        background = AppColors.background;
+        foreground = AppColors.error;
+        side = const BorderSide(color: AppColors.error);
     }
 
     return Opacity(

@@ -11,6 +11,7 @@ import '../../../core/widgets/app_link_button.dart';
 import '../../../core/widgets/glass_surface.dart';
 import '../../../data/invites.dart';
 import '../../../data/pear_repository.dart';
+import '../../../data/preferences.dart';
 import '../../onboarding/presentation/widgets/onboarding_backdrop.dart';
 import '../../onboarding/presentation/widgets/onboarding_scaffold.dart';
 
@@ -45,7 +46,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
     setState(() => _busy = true);
     await Future<void>.delayed(const Duration(milliseconds: 600));
     if (!mounted) return;
-    PearScope.read(context).upgradeToPro();
+    PearScope.read(context).upgradeToPro(
+      billing: _plan == PaywallPlan.yearly
+          ? ProBilling.yearly
+          : ProBilling.monthly,
+    );
     Navigator.of(context).pop(true);
   }
 

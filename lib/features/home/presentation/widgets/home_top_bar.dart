@@ -13,9 +13,13 @@ class HomeTopBar extends StatelessWidget {
     required this.onProfile,
     required this.onNotifications,
     this.title = 'Shopping list',
+    this.hasUnread = false,
   });
 
   final String title;
+
+  /// Green dot on the bell.
+  final bool hasUnread;
   final VoidCallback onProfile;
   final VoidCallback onNotifications;
 
@@ -40,9 +44,28 @@ class HomeTopBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           GlassIconButton(
-            tooltip: 'Notifications',
+            tooltip: hasUnread ? 'Notifications, unread' : 'Notifications',
             onPressed: onNotifications,
-            icon: SvgPicture.asset(AppIcons.bell, width: 18, height: 18),
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                SvgPicture.asset(AppIcons.bell, width: 18, height: 18),
+                if (hasUnread)
+                  Positioned(
+                    right: -1,
+                    top: -1,
+                    child: Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF45C188),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ],
       ),

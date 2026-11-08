@@ -16,7 +16,11 @@ class ListAccessCard extends StatelessWidget {
     required this.selected,
     required this.onChanged,
     this.kinds = ListKind.values,
+    this.subtitles = const {},
   });
+
+  /// Replaces the default subtitle per row, e.g. "2 lists included".
+  final Map<ListKind, String> subtitles;
 
   final Set<ListKind> selected;
   final void Function(ListKind kind, bool on) onChanged;
@@ -60,6 +64,7 @@ class ListAccessCard extends StatelessWidget {
             ],
             _Row(
               kind: kinds[i],
+              subtitle: subtitles[kinds[i]] ?? subtitle(kinds[i]),
               value: selected.contains(kinds[i]),
               onChanged: (v) => onChanged(kinds[i], v),
             ),
@@ -71,9 +76,15 @@ class ListAccessCard extends StatelessWidget {
 }
 
 class _Row extends StatelessWidget {
-  const _Row({required this.kind, required this.value, required this.onChanged});
+  const _Row({
+    required this.kind,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
 
   final ListKind kind;
+  final String subtitle;
   final bool value;
   final ValueChanged<bool> onChanged;
 
@@ -93,10 +104,7 @@ class _Row extends StatelessWidget {
                 children: [
                   Text(ListAccessCard.title(kind), style: AppTextStyles.body1Medium),
                   const SizedBox(height: 2),
-                  Text(
-                    ListAccessCard.subtitle(kind),
-                    style: AppTextStyles.body2Regular,
-                  ),
+                  Text(subtitle, style: AppTextStyles.body2Regular),
                 ],
               ),
             ),

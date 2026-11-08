@@ -16,11 +16,19 @@ import '../../onboarding/presentation/widgets/onboarding_scaffold.dart';
 import 'widgets/list_access_card.dart';
 
 /// Opens the right screen for an invite link.
-void openIncomingInvite(BuildContext context, IncomingInvite invite) {
+///
+/// [signedIn]: the invite was opened inside the app (e.g. from
+/// Notifications), so accepting just joins the lists ("Invitation - old
+/// user"); otherwise the person signs up first.
+void openIncomingInvite(
+  BuildContext context,
+  IncomingInvite invite, {
+  bool signedIn = false,
+}) {
   Navigator.of(context).push(
     MaterialPageRoute<void>(
       builder: (_) => invite.valid
-          ? IncomingInvitationScreen(invite: invite)
+          ? IncomingInvitationScreen(invite: invite, signedIn: signedIn)
           : InvalidInviteScreen(inviterName: invite.from.firstName),
     ),
   );
@@ -29,9 +37,14 @@ void openIncomingInvite(BuildContext context, IncomingInvite invite) {
 /// "Join Sam’s shared lists?" for someone without an account (Figma
 /// "Invitation - new user" 2184:8421).
 class IncomingInvitationScreen extends StatefulWidget {
-  const IncomingInvitationScreen({super.key, required this.invite});
+  const IncomingInvitationScreen({
+    super.key,
+    required this.invite,
+    this.signedIn = false,
+  });
 
   final IncomingInvite invite;
+  final bool signedIn;
 
   @override
   State<IncomingInvitationScreen> createState() =>
@@ -51,6 +64,14 @@ class _IncomingInvitationScreenState extends State<IncomingInvitationScreen> {
         lists: _lists,
       ),
     );
+    if (widget.signedIn) {
+      final messenger = ScaffoldMessenger.of(context);
+      Navigator.of(context).pop();
+      messenger.showSnackBar(
+        SnackBar(content: Text('You joined $_inviter\u2019s lists.')),
+      );
+      return;
+    }
     // New users create their account next; the lists are waiting at Home.
     AuthNavigation.startSignUp(context, joinedInvite: true);
   }
@@ -65,6 +86,10 @@ class _IncomingInvitationScreenState extends State<IncomingInvitationScreen> {
       cancelLabel: 'Go back',
     );
     if (!decline || !mounted) return;
+    if (widget.signedIn) {
+      Navigator.of(context).pop();
+      return;
+    }
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute<void>(builder: (_) => const WelcomeScreen()),
       (route) => false,
@@ -113,6 +138,12 @@ class _IncomingInvitationScreenState extends State<IncomingInvitationScreen> {
           _InvitationTab(
             child: ListAccessCard(
               kinds: kinds,
+              subtitles: {
+                for (final MapEntry(:key, :value)
+                    in widget.invite.summaries.entries)
+                  key: '${value.lists} ${value.lists == 1 ? 'list' : 'lists'} '
+                      'included \u00b7 ${value.items} items',
+              },
               selected: _lists,
               onChanged: (kind, on) => setState(() {
                 on ? _lists.add(kind) : _lists.remove(kind);
