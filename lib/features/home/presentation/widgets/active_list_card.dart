@@ -8,6 +8,8 @@ import '../../../../core/widgets/app_avatar.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_compact_button.dart';
 import '../../../../core/widgets/app_link_button.dart';
+import '../../../../core/widgets/list_icon_badge.dart';
+import '../../../collection/domain/kind_copy.dart';
 import '../../domain/home_models.dart';
 
 /// The main list card at the top of Home (Figma: "Select container").
@@ -38,10 +40,10 @@ class ActiveListCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const _ListIconBadge(),
+              ListIconBadge(icon: list.kind.cardIcon),
               const Spacer(),
               AppCompactButton(
-                label: 'Add item',
+                label: list.kind.addLabel,
                 onPressed: onAddItem,
                 icon: SvgPicture.asset(
                   AppIcons.addWhite,
@@ -53,7 +55,7 @@ class ActiveListCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            list.isEmpty ? 'What do we need this week?' : list.name,
+            list.isEmpty ? _emptyTitle(list.kind) : list.name,
             style: AppTextStyles.body1Bold,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -61,8 +63,13 @@ class ActiveListCard extends StatelessWidget {
           const SizedBox(height: 4),
           if (list.isEmpty)
             Text(
-              'Add your first item. Anyone you share this list with will '
-              'see it too.',
+              _emptyMessage(list.kind, members),
+              style: AppTextStyles.body2Regular,
+            )
+          else if (list.kind == ListKind.wishlist)
+            Text(
+              '${list.totalItems} ${list.totalItems == 1 ? 'wish' : 'wishes'}'
+              ' · ${list.boughtCount} bought.',
               style: AppTextStyles.body2Regular,
             )
           else
@@ -103,6 +110,27 @@ class ActiveListCard extends StatelessWidget {
     );
   }
 
+  static String _emptyTitle(ListKind kind) => switch (kind) {
+        ListKind.shopping => 'What do we need this week?',
+        ListKind.wishlist => 'What are you wishing for?',
+        ListKind.places => 'Where should we go next?',
+      };
+
+  static String _emptyMessage(ListKind kind, List<Person> members) {
+    final partner = members.where((p) => !p.isMe).firstOrNull;
+    return switch (kind) {
+      ListKind.shopping => 'Add your first item. Anyone you share this list '
+          'with will see it too.',
+      ListKind.wishlist => 'Save gift ideas and someday buys. Paste a link '
+          'and we\u2019ll fill in the name and price.',
+      ListKind.places => partner == null
+          ? 'Save the restaurants, caf\u00e9s and trips you want to try, and '
+              'remember the ones you loved.'
+          : 'Save the restaurants, caf\u00e9s and trips you want to try with '
+              '${partner.firstName}, and remember the ones you loved.',
+    };
+  }
+
   static String _membersLabel(List<Person> members) {
     final others = members.where((p) => !p.isMe).toList();
     if (others.isEmpty) return 'Only you';
@@ -137,42 +165,6 @@ class _ItemsPreview extends StatelessWidget {
       ),
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
-    );
-  }
-}
-
-/// Cart icon on a white disc over a blurred gradient (Figma: "List icon").
-class _ListIconBadge extends StatelessWidget {
-  const _ListIconBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox.square(
-      dimension: 38,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.asset(AppImages.listIconBackground, fit: BoxFit.cover),
-            Center(
-              child: Container(
-                width: 34,
-                height: 34,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: AppColors.surfaceForeground,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(color: AppColors.shadowSoft, blurRadius: 32),
-                  ],
-                ),
-                child: SvgPicture.asset(AppIcons.cart, width: 18, height: 18),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

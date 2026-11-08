@@ -9,6 +9,7 @@ import '../../../core/widgets/confirm_sheet.dart';
 import '../../../data/models.dart';
 import '../../../data/pear_repository.dart';
 import '../../add_item/presentation/add_item_sheet.dart';
+import '../../collection/presentation/collection_list_screen.dart';
 import 'item_details_sheet.dart';
 import 'list_settings_sheet.dart';
 import 'manage_entries_screen.dart';
@@ -149,6 +150,13 @@ class _ListScreenState extends State<ListScreen> {
     final list = repo.listById(widget.listId);
     if (list == null) {
       return const Scaffold(backgroundColor: AppColors.background);
+    }
+    // Wish and place lists have their own page.
+    if (list.kind != ListKind.shopping) {
+      return CollectionListScreen(
+        listId: list.id,
+        justCreated: widget.justCreated,
+      );
     }
 
     final isEmpty = list.items.isEmpty;

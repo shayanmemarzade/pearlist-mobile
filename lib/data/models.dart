@@ -43,6 +43,8 @@ class Activity {
     required this.actor,
     required this.description,
     required this.at,
+    this.kind = ListKind.shopping,
+    this.listName,
   });
 
   final String id;
@@ -51,6 +53,12 @@ class Activity {
   /// Full sentence, e.g. "Sam added Olive oil".
   final String description;
   final DateTime at;
+
+  /// Which tab's activity feed it belongs to.
+  final ListKind kind;
+
+  /// The list it happened in, e.g. "Our home".
+  final String? listName;
 }
 
 /// Which bottom-nav tab a list lives under.
@@ -62,6 +70,10 @@ enum ListKind {
   const ListKind(this.label);
   final String label;
 }
+
+/// How much a wish or place matters (Figma "Wish level" / "Interest
+/// level"). Shopping items don't use it.
+enum ItemLevel { high, medium, low }
 
 class ShoppingItem {
   const ShoppingItem({
@@ -75,6 +87,10 @@ class ShoppingItem {
     this.urgent = false,
     this.editedAt,
     this.boughtAt,
+    this.link,
+    this.note,
+    this.level = ItemLevel.medium,
+    this.boughtSecretly = false,
   });
 
   final String id;
@@ -90,6 +106,18 @@ class ShoppingItem {
   final DateTime? editedAt;
   final DateTime? boughtAt;
 
+  /// Wishes: product URL. Places: address or map link.
+  final String? link;
+
+  /// "More info" text.
+  final String? note;
+  final ItemLevel level;
+
+  /// A wish bought as a surprise: listed under "Bought secretly" for the
+  /// buyer and still open for everyone else.
+  // TODO: the API must hide this from the person the wish is for.
+  final bool boughtSecretly;
+
   bool get isBought => boughtAt != null;
 
   /// "2 x Apricots" when there's more than one.
@@ -103,6 +131,10 @@ class ShoppingItem {
     bool? urgent,
     DateTime? editedAt,
     DateTime? Function()? boughtAt,
+    String? Function()? link,
+    String? Function()? note,
+    ItemLevel? level,
+    bool? boughtSecretly,
   }) {
     return ShoppingItem(
       id: id,
@@ -115,6 +147,10 @@ class ShoppingItem {
       addedAt: addedAt,
       editedAt: editedAt ?? this.editedAt,
       boughtAt: boughtAt != null ? boughtAt() : this.boughtAt,
+      link: link != null ? link() : this.link,
+      note: note != null ? note() : this.note,
+      level: level ?? this.level,
+      boughtSecretly: boughtSecretly ?? this.boughtSecretly,
     );
   }
 }

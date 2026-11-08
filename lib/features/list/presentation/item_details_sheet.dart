@@ -203,7 +203,7 @@ class _ItemDetailsSheetState extends State<_ItemDetailsSheet> {
             ),
             const SizedBox(height: 16),
           ],
-          _AddedBy(item: item),
+          ItemAddedBy(item: item),
         ],
       ),
     );
@@ -240,8 +240,8 @@ class _UrgentRow extends StatelessWidget {
 }
 
 /// "Added by you · 2d ago · Edited 1h ago".
-class _AddedBy extends StatelessWidget {
-  const _AddedBy({required this.item});
+class ItemAddedBy extends StatelessWidget {
+  const ItemAddedBy({super.key, required this.item});
 
   final ShoppingItem item;
 

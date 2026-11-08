@@ -9,21 +9,27 @@ class AppInputShell extends StatelessWidget {
     super.key,
     required this.child,
     this.borderColor = AppColors.borderGrayLight,
+    this.radius = 16,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16),
   });
 
   final Widget child;
   final Color borderColor;
+
+  /// 16 for regular inputs, 32 for the pill inputs of the sign-up flow.
+  final double radius;
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
       height: 46,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: padding,
       alignment: Alignment.centerLeft,
       decoration: BoxDecoration(
         color: AppColors.surfaceForeground,
-        borderRadius: const BorderRadius.all(Radius.circular(16)),
+        borderRadius: BorderRadius.all(Radius.circular(radius)),
         border: Border.all(color: borderColor),
         boxShadow: const [
           BoxShadow(

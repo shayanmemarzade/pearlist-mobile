@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../auth/presentation/auth_navigation.dart';
 
 /// Welcome screen (Figma: "Welcome Screen" 2492:11097) — the end state of
 /// the splash animation.
@@ -50,17 +51,13 @@ class WelcomeScreen extends StatelessWidget {
                         const Spacer(),
                         AppButton(
                           label: 'Get Started',
-                          onPressed: () {
-                            // TODO: navigate to Sign up — Phone number.
-                          },
+                          onPressed: () => AuthNavigation.startSignUp(context),
                         ),
                         const SizedBox(height: 12),
                         AppButton(
                           label: 'Sign In',
                           variant: AppButtonVariant.outline,
-                          onPressed: () {
-                            // TODO: navigate to Sign in — Phone number.
-                          },
+                          onPressed: () => AuthNavigation.startSignIn(context),
                         ),
                         const SizedBox(height: 12),
                         SizedBox(

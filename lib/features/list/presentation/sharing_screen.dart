@@ -14,6 +14,7 @@ import '../../../core/widgets/app_list_row.dart';
 import '../../../core/widgets/app_toggle.dart';
 import '../../../data/models.dart';
 import '../../../data/pear_repository.dart';
+import '../../invite/presentation/share_lists_screen.dart';
 import 'widgets/settings_page_header.dart';
 
 /// "Who can use Weekly groceries?" (Figma: "Sharing - owner view").
@@ -96,9 +97,15 @@ class SharingScreen extends StatelessWidget {
                       width: 18,
                       height: 18,
                     ),
-                    onPressed: () {
-                      // TODO: send an invite (Pro only on the free plan).
-                    },
+                    // On the free plan the invite is saved and the user is
+                    // offered Pro ("Invites Pending").
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const ShareListsScreen(
+                          mode: ShareListsMode.addPartner,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),

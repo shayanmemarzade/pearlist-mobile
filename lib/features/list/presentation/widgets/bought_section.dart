@@ -9,7 +9,8 @@ import '../../../../core/widgets/app_input_shell.dart';
 import '../../../../data/models.dart';
 import 'item_row.dart';
 
-/// Collapsible "✓ Bought · 4" section at the bottom of the list.
+/// Collapsible "✓ Bought · 4" section at the bottom of the list (also
+/// "Bought secretly" on wish lists and "Visited" on place lists).
 class BoughtSection extends StatelessWidget {
   const BoughtSection({
     super.key,
@@ -18,8 +19,14 @@ class BoughtSection extends StatelessWidget {
     required this.onToggleExpanded,
     required this.onUncheck,
     required this.onOpen,
+    this.title = 'Bought',
+    this.itemBuilder,
   });
 
+  final String title;
+
+  /// Row for one item; defaults to the shopping [ItemRow].
+  final Widget Function(ShoppingItem item)? itemBuilder;
   final List<ShoppingItem> items;
   final bool expanded;
   final VoidCallback onToggleExpanded;
@@ -51,7 +58,7 @@ class BoughtSection extends StatelessWidget {
                   Expanded(
                     child: Text.rich(
                       TextSpan(
-                        text: 'Bought',
+                        text: title,
                         style: AppTextStyles.body1Medium,
                         children: [
                           TextSpan(
@@ -89,12 +96,13 @@ class BoughtSection extends StatelessWidget {
                             AppDivider(),
                             SizedBox(height: 16),
                           ],
-                          ItemRow(
-                            item: items[i],
-                            showHandle: false,
-                            onCheck: (_) => onUncheck(items[i]),
-                            onOpen: () => onOpen(items[i]),
-                          ),
+                          itemBuilder?.call(items[i]) ??
+                              ItemRow(
+                                item: items[i],
+                                showHandle: false,
+                                onCheck: (_) => onUncheck(items[i]),
+                                onOpen: () => onOpen(items[i]),
+                              ),
                         ],
                       ],
                     ),

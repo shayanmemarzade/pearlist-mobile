@@ -12,8 +12,10 @@ class HomeTopBar extends StatelessWidget {
     super.key,
     required this.onProfile,
     required this.onNotifications,
+    this.title = 'Shopping list',
   });
 
+  final String title;
   final VoidCallback onProfile;
   final VoidCallback onNotifications;
 
@@ -25,7 +27,7 @@ class HomeTopBar extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              'Shopping list',
+              title,
               style: AppTextStyles.heading3Bold,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

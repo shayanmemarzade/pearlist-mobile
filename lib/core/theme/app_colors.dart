@@ -52,4 +52,14 @@ abstract final class AppColors {
   // Brand
   static const Color primary = Color(0xFF386641); // pear green
   static const Color primary50 = Color(0xFFDBEBDE); // primary/50
+
+  // Onboarding, invites and paywall
+  static const Color errorBorder = Color(0xFFF1483C); // error/500, invalid input
+  static const Color orDivider = Color(0xFFC9C9C9); // "or" between options
+  static const Color invitationGreen = Color(0xFF223D27); // invitation tab
+  static const Color paywallBackground = Color(0xFF16291A);
+  static const Color gold = Color(0xFFDDA05F); // paywall ticks, "together"
+  static const Color sage = Color(0xFF799B80); // backdrop ellipses
+  static const Color sand = Color(0xFFEBC69F); // backdrop ellipse
+  static const Color umber = Color(0xFF8B643B); // paywall backdrop ellipse
 }

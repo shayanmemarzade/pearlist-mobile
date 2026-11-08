@@ -4,6 +4,7 @@ import 'dart:ui' show ImageFilter, Shadow;
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
 
 /// Frosted "glass" surface used by the top bar actions and the bottom nav
 /// (Figma: white 30% fill, glass effect, drop shadow 0/0/32 black 10%).
@@ -106,6 +107,46 @@ class GlassIconButton extends StatelessWidget {
               onTap: onPressed,
               customBorder: const CircleBorder(),
               child: Center(child: icon),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Glass pill with a text label (Figma: "Skip" in the sign-up top bar).
+class GlassTextButton extends StatelessWidget {
+  const GlassTextButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.color = AppColors.headingBlack,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 46,
+      child: GlassSurface(
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            onTap: onPressed,
+            customBorder: const StadiumBorder(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                widthFactor: 1,
+                child: Text(
+                  label,
+                  style: AppTextStyles.body1Medium.copyWith(color: color),
+                ),
+              ),
             ),
           ),
         ),

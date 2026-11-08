@@ -1,22 +1,31 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
-/// Round profile picture (Figma: "Avatar", 32 or 20px).
-/// Falls back to the person's initial when there is no photo or it fails
-/// to load.
+/// Round profile picture (Figma: "Avatar", 20–85px).
+/// [imageUrl] is a web URL or a local file path (a photo picked during
+/// sign-up). Falls back to the person's initial when there is no photo or
+/// it fails to load.
 class AppAvatar extends StatelessWidget {
   const AppAvatar({
     super.key,
     required this.name,
     this.imageUrl,
     this.size = 32,
+    this.background = AppColors.surfacePrimaryLight,
+    this.foreground = AppColors.textPrimary,
   });
 
   final String name;
   final String? imageUrl;
   final double size;
+
+  /// Colours of the initial fallback.
+  final Color background;
+  final Color foreground;
 
   @override
   Widget build(BuildContext context) {
@@ -27,13 +36,19 @@ class AppAvatar extends StatelessWidget {
       child: ClipOval(
         child: SizedBox.square(
           dimension: size,
-          child: url == null
-              ? _initial()
-              : Image.network(
-                  url,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => _initial(),
-                ),
+          child: switch (url) {
+            null => _initial(),
+            final String u when u.startsWith('http') => Image.network(
+                u,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => _initial(),
+              ),
+            final String u => Image.file(
+                File(u),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => _initial(),
+              ),
+          },
         ),
       ),
     );
@@ -44,12 +59,12 @@ class AppAvatar extends StatelessWidget {
     final letter =
         trimmed.isEmpty ? '?' : trimmed.characters.first.toUpperCase();
     return ColoredBox(
-      color: AppColors.surfacePrimaryLight,
+      color: background,
       child: Center(
         child: Text(
           letter,
           style: AppTextStyles.body2SemiBold.copyWith(
-            color: AppColors.textPrimary,
+            color: foreground,
             fontSize: size * 0.42,
             height: 1,
             letterSpacing: 0,

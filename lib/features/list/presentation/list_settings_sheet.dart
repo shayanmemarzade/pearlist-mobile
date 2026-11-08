@@ -10,6 +10,7 @@ import '../../../core/widgets/app_list_row.dart';
 import '../../../core/widgets/app_sheet.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/app_toggle.dart';
+import '../../../data/models.dart';
 import '../../../data/pear_repository.dart';
 
 /// Where to go after the settings sheet closes.
@@ -66,6 +67,7 @@ class _ListSettingsSheetState extends State<_ListSettingsSheet> {
     final list = repo.listById(widget.listId);
     if (list == null) return const SizedBox.shrink();
 
+    final shopping = list.kind == ListKind.shopping;
     final others = list.activeMembers.where((p) => !p.isMe).toList();
     final sharing = switch (others.length) {
       0 => 'Only you can edit',
@@ -146,41 +148,45 @@ class _ListSettingsSheetState extends State<_ListSettingsSheet> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          const SectionLabel('Stores & aisles'),
-          GroupedCard(
-            children: [
-              AppListRow(
-                leading: SvgPicture.asset(
-                  AppIcons.store,
-                  width: 24,
-                  height: 24,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.primary,
-                    BlendMode.srcIn,
+          if (shopping) ...[
+            const SizedBox(height: 16),
+            const SectionLabel('Stores & aisles'),
+            GroupedCard(
+              children: [
+                AppListRow(
+                  leading: SvgPicture.asset(
+                    AppIcons.store,
+                    width: 24,
+                    height: 24,
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.primary,
+                      BlendMode.srcIn,
+                    ),
                   ),
+                  title: 'Manage stores',
+                  subtitle: stores,
+                  trailing: _chevron,
+                  onTap: () => _go(ListSettingsAction.stores),
                 ),
-                title: 'Manage stores',
-                subtitle: stores,
-                trailing: _chevron,
-                onTap: () => _go(ListSettingsAction.stores),
-              ),
-              AppListRow(
-                leading: _icon(AppIcons.category),
-                title: 'Manage aisles',
-                subtitle: 'Add, remove or reorder aisles',
-                trailing: _chevron,
-                onTap: () => _go(ListSettingsAction.aisles),
-              ),
-            ],
-          ),
+                AppListRow(
+                  leading: _icon(AppIcons.category),
+                  title: 'Manage aisles',
+                  subtitle: 'Add, remove or reorder aisles',
+                  trailing: _chevron,
+                  onTap: () => _go(ListSettingsAction.aisles),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 16),
           const SectionLabel('Items'),
           GroupedCard(
             children: [
               AppListRow(
                 leading: _icon(AppIcons.repeat),
-                title: 'Clear bought items after 7 days',
+                title: shopping || list.kind == ListKind.wishlist
+                    ? 'Clear bought items after 7 days'
+                    : 'Clear visited places after 7 days',
                 trailing: AppToggle(
                   value: list.autoClearBought,
                   onChanged: (v) => repo.setAutoClearBought(list.id, v),
@@ -190,7 +196,9 @@ class _ListSettingsSheetState extends State<_ListSettingsSheet> {
           ),
           const SizedBox(height: 16),
           AppButton(
-            label: 'Clear bought items',
+            label: list.kind == ListKind.places
+                ? 'Clear visited places'
+                : 'Clear bought items',
             variant: AppButtonVariant.greenOutline,
             onPressed: list.bought.isEmpty
                 ? null

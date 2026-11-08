@@ -21,7 +21,11 @@ class OtherListsSection extends StatelessWidget {
     required this.onNewList,
     required this.onOpenList,
     required this.onTemplate,
+    this.title = 'Other lists',
   });
+
+  /// "Other lists" / "Other wishlists".
+  final String title;
 
   final List<ListSummary> lists;
   final List<ListTemplate> templates;
@@ -41,7 +45,7 @@ class OtherListsSection extends StatelessWidget {
         Padding(
           padding: _inset,
           child: HomeSectionHeader(
-            title: hasLists ? 'Other lists' : 'Start a list',
+            title: hasLists ? title : 'Start a list',
             action: AppLinkButton(
               label: 'New List',
               onPressed: onNewList,
@@ -93,8 +97,10 @@ class _ListSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final count =
-        summary.itemCount == 1 ? '1 item' : '${summary.itemCount} items';
+    final noun = summary.kind == ListKind.places ? 'Place' : 'Item';
+    final count = summary.itemCount == 1
+        ? '1 $noun'
+        : '${summary.itemCount} ${noun}s';
 
     return SizedBox(
       width: 191,
@@ -185,9 +191,11 @@ class _TemplateChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               SvgPicture.asset(
-                template.icon == ListIcon.lock
-                    ? AppIcons.lockSmall
-                    : AppIcons.listSmall,
+                switch (template.icon) {
+                  ListIcon.lock => AppIcons.lockSmall,
+                  ListIcon.place => AppIcons.pinGreen,
+                  ListIcon.list => AppIcons.listSmall,
+                },
                 width: 16,
                 height: 16,
               ),

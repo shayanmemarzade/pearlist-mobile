@@ -15,21 +15,31 @@ import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/app_toggle.dart';
 import '../../../data/models.dart';
 import '../../../data/pear_repository.dart';
+import '../../invite/presentation/share_lists_screen.dart';
+import '../../paywall/presentation/paywall_screen.dart';
 import '../domain/new_list.dart';
 
 /// Opens the "Add new list" sheet (Figma section "Add list", 2959:13102).
 /// Resolves to the new list's details, or null if closed.
-Future<NewList?> showAddListSheet(BuildContext context, {String? initialName}) {
+Future<NewList?> showAddListSheet(
+  BuildContext context, {
+  String? initialName,
+  ListKind initialKind = ListKind.shopping,
+}) {
   return showAppSheet<NewList>(
     context,
-    builder: (context) => _AddListSheet(initialName: initialName),
+    builder: (context) =>
+        _AddListSheet(initialName: initialName, initialKind: initialKind),
   );
 }
 
 class _AddListSheet extends StatefulWidget {
-  const _AddListSheet({this.initialName});
+  const _AddListSheet({this.initialName, required this.initialKind});
 
   final String? initialName;
+
+  /// Tab preselected from the page the sheet was opened on.
+  final ListKind initialKind;
 
   @override
   State<_AddListSheet> createState() => _AddListSheetState();
@@ -37,7 +47,7 @@ class _AddListSheet extends StatefulWidget {
 
 class _AddListSheetState extends State<_AddListSheet> {
   late final _name = TextEditingController(text: widget.initialName);
-  ListKind _kind = ListKind.shopping;
+  late ListKind _kind = widget.initialKind;
   bool _share = true;
 
   @override
@@ -115,17 +125,18 @@ class _AddListSheetState extends State<_AddListSheet> {
               label: 'Select from contacts',
               variant: AppButtonVariant.greenOutline,
               icon: SvgPicture.asset(AppIcons.tagUser, width: 18, height: 18),
-              onPressed: () {
-                // TODO: pick a contact to invite.
-              },
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) =>
+                      const ShareListsScreen(mode: ShareListsMode.addPartner),
+                ),
+              ),
             ),
           ] else ...[
             const _OnlyYouRow(),
             const SizedBox(height: 12),
             _ProUpsellCard(
-              onTryPro: () {
-                // TODO: start the Pro trial flow.
-              },
+              onTryPro: () => showPaywall(context),
             ),
           ],
         ],

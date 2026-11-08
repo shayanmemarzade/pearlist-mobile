@@ -12,12 +12,16 @@ class AppLinkButton extends StatelessWidget {
     required this.onPressed,
     this.leadingIcon,
     this.trailingIcon,
+    this.color = AppColors.buttonLink,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final Widget? leadingIcon;
   final Widget? trailingIcon;
+
+  /// Green by default; the sign-up screens use body text colour.
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +40,7 @@ class AppLinkButton extends StatelessWidget {
             Text(
               label,
               style: AppTextStyles.body2Medium
-                  .copyWith(color: AppColors.buttonLink),
+                  .copyWith(color: color),
             ),
             if (trailingIcon != null) ...[
               const SizedBox(width: 8),

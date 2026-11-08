@@ -19,8 +19,12 @@ class RecentActivitySection extends StatelessWidget {
     required this.activities,
     required this.partnerName,
     required this.onViewAll,
+    this.kind = ListKind.shopping,
   });
 
+  /// Wishes show the list name under each entry and a different empty
+  /// state.
+  final ListKind kind;
   final List<Activity> activities;
 
   /// Name used in the empty-state copy ("Anything you or Sam add…").
@@ -35,7 +39,7 @@ class RecentActivitySection extends StatelessWidget {
         children: [
           const HomeSectionHeader(title: 'Recent activity'),
           const SizedBox(height: 8),
-          _EmptyActivity(partnerName: partnerName),
+          _EmptyActivity(partnerName: partnerName, kind: kind),
         ],
       );
     }
@@ -46,7 +50,7 @@ class RecentActivitySection extends StatelessWidget {
         HomeSectionHeader(
           title: 'Recent activities',
           action: AppLinkButton(
-            label: 'View all',
+            label: kind == ListKind.wishlist ? 'View List' : 'View all',
             onPressed: onViewAll,
             trailingIcon: SvgPicture.asset(
               AppIcons.arrowRight,
@@ -65,7 +69,10 @@ class RecentActivitySection extends StatelessWidget {
                   AppDivider(),
                   SizedBox(height: 16),
                 ],
-                _ActivityRow(activity: activities[i]),
+                _ActivityRow(
+                  activity: activities[i],
+                  showList: kind == ListKind.wishlist,
+                ),
               ],
             ],
           ),
@@ -76,9 +83,12 @@ class RecentActivitySection extends StatelessWidget {
 }
 
 class _ActivityRow extends StatelessWidget {
-  const _ActivityRow({required this.activity});
+  const _ActivityRow({required this.activity, required this.showList});
 
   final Activity activity;
+
+  /// "2m ago · Our home".
+  final bool showList;
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +104,13 @@ class _ActivityRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(activity.description, style: AppTextStyles.body2SemiBold),
-              Text(formatTimeAgo(activity.at), style: AppTextStyles.xsRegular),
+              Text(
+                [
+                  formatTimeAgo(activity.at),
+                  if (showList && activity.listName != null) activity.listName,
+                ].join(' · '),
+                style: AppTextStyles.xsRegular,
+              ),
             ],
           ),
         ),
@@ -104,9 +120,10 @@ class _ActivityRow extends StatelessWidget {
 }
 
 class _EmptyActivity extends StatelessWidget {
-  const _EmptyActivity({required this.partnerName});
+  const _EmptyActivity({required this.partnerName, required this.kind});
 
   final String? partnerName;
+  final ListKind kind;
 
   @override
   Widget build(BuildContext context) {
@@ -121,11 +138,20 @@ class _EmptyActivity extends StatelessWidget {
         ),
         child: Column(
           children: [
-            SvgPicture.asset(AppImages.emptyActivity, width: 115, height: 92),
+            SvgPicture.asset(
+              kind == ListKind.wishlist
+                  ? AppImages.emptyWishes
+                  : AppImages.emptyActivity,
+              width: 115,
+              height: 92,
+            ),
             const SizedBox(height: 16),
             Text(
-              'Anything $who add or check off shows up here, with your '
-              'recent activity.',
+              kind == ListKind.wishlist
+                  ? 'Anything $who save shows up here, with your recent '
+                      'activity.'
+                  : 'Anything $who add or check off shows up here, with your '
+                      'recent activity.',
               style: AppTextStyles.xsRegular,
               textAlign: TextAlign.center,
             ),

@@ -13,11 +13,19 @@ class ListEmptyState extends StatelessWidget {
     super.key,
     required this.justCreated,
     required this.onAdd,
+    this.title,
+    this.message,
+    this.buttonLabel,
   });
 
   /// Shows the welcome copy for a list that was just created.
   final bool justCreated;
   final VoidCallback onAdd;
+
+  /// Overrides for wish and place lists.
+  final String? title;
+  final String? message;
+  final String? buttonLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -30,24 +38,28 @@ class ListEmptyState extends StatelessWidget {
             SvgPicture.asset(AppImages.emptyList, width: 59, height: 82),
             const SizedBox(height: 24),
             Text(
-              justCreated ? 'Your list is ready' : 'Nothing on the list yet',
+              title ??
+                  (justCreated
+                      ? 'Your list is ready'
+                      : 'Nothing on the list yet'),
               style: AppTextStyles.heading3Bold,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              justCreated
-                  ? 'Add your first item below. Anything you add shows up '
-                      'for everyone you share with, sorted by aisle.'
-                  : 'Tap below to add your first item. We’ll sort '
-                      'everything by aisle for you.',
+              message ??
+                  (justCreated
+                      ? 'Add your first item below. Anything you add shows up '
+                          'for everyone you share with, sorted by aisle.'
+                      : 'Tap below to add your first item. We’ll sort '
+                          'everything by aisle for you.'),
               style:
                   AppTextStyles.body1Regular.copyWith(color: AppColors.body2),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
             AppButton(
-              label: 'Add your first item',
+              label: buttonLabel ?? 'Add your first item',
               variant: AppButtonVariant.greenOutline,
               icon: SvgPicture.asset(AppIcons.plusGreen, width: 18, height: 18),
               onPressed: onAdd,
