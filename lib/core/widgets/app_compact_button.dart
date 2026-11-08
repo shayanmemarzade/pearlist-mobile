@@ -11,11 +11,15 @@ class AppCompactButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.icon,
+    this.expand = false,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final Widget? icon;
+
+  /// Stretch to the available width with the content centred.
+  final bool expand;
 
   static const BorderRadius _radius = BorderRadius.all(Radius.circular(12));
 
@@ -31,6 +35,8 @@ class AppCompactButton extends StatelessWidget {
           onTap: onPressed,
           child: Container(
             height: 40,
+            width: expand ? double.infinity : null,
+            alignment: expand ? Alignment.center : null,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             // Same inner-shadow stand-in as AppButton (white 30%, y: 3,
             // blur: 6): a short highlight gradient at the top edge.

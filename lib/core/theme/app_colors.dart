@@ -7,6 +7,12 @@ abstract final class AppColors {
   static const Color background = Color(0xFFF8F5EE); // surface/background
   static const Color surfaceForeground = Color(0xFFFFFFFF); // surface/foreground
   static const Color surfacePrimaryLight = Color(0xFFDBEBDE); // surface/primary-light
+  static const Color surfaceGray = Color(0xFFF4F5F5); // surface/gray
+  static const Color warning50 = Color(0xFFFFF7E6); // warning/50
+  static const Color secondary100 = Color(0xFFF8ECDF); // secondary/100
+  static const Color primary200 = Color(0xFF9AB69F); // primary/200
+  static const Color toastFill = Color(0xE6DBEBDE); // primary-light 90%
+  static const Color badgeGrayText = Color(0xFF404040);
 
   // Text
   static const Color headingBlack = Color(0xFF131514); // text/heading-black
@@ -16,6 +22,10 @@ abstract final class AppColors {
   static const Color textOnButton = Color(0xFFFFFFFF); // text/button
   static const Color textDisable = Color(0xFFBCC0BD); // text/disable
   static const Color typographySecondary = Color(0xFF292F35); // typography/secundary
+  static const Color typographyTertiary = Color(0xFF4D5660); // typography/tertiary
+  static const Color typographyQuaternary = Color(0xFF7E8994); // typography/quatenary
+  static const Color textWarning = Color(0xFFD46B08); // text/warning
+  static const Color error = Color(0xFF902922); // error/700, icon/error
 
   // Buttons
   static const Color buttonBlack = Color(0xFF1A1A1A); // button/black/default

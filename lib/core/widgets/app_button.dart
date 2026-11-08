@@ -7,8 +7,14 @@ enum AppButtonVariant {
   /// Black filled button (Figma: Button / Primary / Filled / Large).
   primary,
 
-  /// Outlined button on the background color (used for "Sign In").
+  /// Green filled button (Figma: Button/Primary/Default, e.g. "Mark as bought").
+  green,
+
+  /// Black outline on the background color ("Sign In", "Cancel").
   outline,
+
+  /// Green outline ("Add item", "Clear bought items", "Invite a partner").
+  greenOutline,
 }
 
 /// Full-width, 46px-tall pill button from the Figma design system.
@@ -18,38 +24,54 @@ class AppButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.variant = AppButtonVariant.primary,
+    this.icon,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final AppButtonVariant variant;
 
+  /// Optional 18px icon before the label.
+  final Widget? icon;
+
   static const double _height = 46;
   static const BorderRadius _radius = BorderRadius.all(Radius.circular(32));
 
   @override
   Widget build(BuildContext context) {
-    final isPrimary = variant == AppButtonVariant.primary;
     final enabled = onPressed != null;
+    final filled = variant == AppButtonVariant.primary ||
+        variant == AppButtonVariant.green;
 
-    // Figma "State=Disabled" for the filled button: light grey fill and
-    // grey label. The outline button just fades.
-    final disabledPrimary = isPrimary && !enabled;
+    // Figma "State=Disabled" for filled buttons: light grey fill and grey
+    // label. Outline buttons just fade.
+    final disabledFilled = filled && !enabled;
+
+    final Color background;
+    final Color foreground;
+    BorderSide side = BorderSide.none;
+    switch (variant) {
+      case AppButtonVariant.primary:
+        background = AppColors.buttonBlack;
+        foreground = AppColors.textOnButton;
+      case AppButtonVariant.green:
+        background = AppColors.buttonPrimary;
+        foreground = AppColors.textOnButton;
+      case AppButtonVariant.outline:
+        background = AppColors.background;
+        foreground = AppColors.headingBlack;
+        side = const BorderSide(color: AppColors.buttonBlack);
+      case AppButtonVariant.greenOutline:
+        background = AppColors.background;
+        foreground = AppColors.buttonPrimary;
+        side = const BorderSide(color: AppColors.buttonPrimary);
+    }
 
     return Opacity(
-      opacity: enabled || isPrimary ? 1 : 0.4,
+      opacity: enabled || filled ? 1 : 0.4,
       child: Material(
-        color: disabledPrimary
-            ? AppColors.buttonBlackDisable
-            : isPrimary
-                ? AppColors.buttonBlack
-                : AppColors.background,
-        shape: RoundedRectangleBorder(
-          borderRadius: _radius,
-          side: isPrimary
-              ? BorderSide.none
-              : const BorderSide(color: AppColors.buttonBlack),
-        ),
+        color: disabledFilled ? AppColors.buttonBlackDisable : background,
+        shape: RoundedRectangleBorder(borderRadius: _radius, side: side),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onPressed,
@@ -59,9 +81,9 @@ class AppButton extends StatelessWidget {
             alignment: Alignment.center,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             // Figma uses an inner shadow (white 30%, y: 3, blur: 6) on the
-            // filled button. Flutter has no inset shadow, so a short top
+            // filled buttons. Flutter has no inset shadow, so a short top
             // highlight gradient reproduces the same look.
-            foregroundDecoration: isPrimary && enabled
+            foregroundDecoration: filled && enabled
                 ? const BoxDecoration(
                     borderRadius: _radius,
                     gradient: LinearGradient(
@@ -72,17 +94,60 @@ class AppButton extends StatelessWidget {
                     ),
                   )
                 : null,
-            child: Text(
-              label,
-              style: AppTextStyles.body1Medium.copyWith(
-                color: disabledPrimary
-                    ? AppColors.textDisable
-                    : isPrimary
-                        ? AppColors.textOnButton
-                        : AppColors.headingBlack,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icon != null) ...[icon!, const SizedBox(width: 8)],
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.body1Medium.copyWith(
+                      color: disabledFilled
+                          ? AppColors.textDisable
+                          : foreground,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Red text button with a trash icon (Figma: "Clear entire list").
+class AppDangerTextButton extends StatelessWidget {
+  const AppDangerTextButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.icon,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final Widget? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: const BorderRadius.all(Radius.circular(8)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[icon!, const SizedBox(width: 8)],
+            Text(
+              label,
+              style: AppTextStyles.body1Medium.copyWith(color: AppColors.error),
+            ),
+          ],
         ),
       ),
     );

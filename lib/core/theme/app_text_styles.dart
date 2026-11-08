@@ -83,6 +83,33 @@ abstract final class AppTextStyles {
         color: AppColors.headingBlack,
       );
 
+  /// Body 2/Bold — Inter Tight Bold 14 / 20, 2% tracking.
+  static TextStyle get body2Bold => GoogleFonts.interTight(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        height: 20 / 14,
+        letterSpacing: 0.28,
+        color: AppColors.headingBlack,
+      );
+
+  /// Small text/Medium — Inter Tight Medium 12 / 18, 3% tracking.
+  static TextStyle get smallMedium => GoogleFonts.interTight(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        height: 18 / 12,
+        letterSpacing: 0.36,
+        color: AppColors.body2,
+      );
+
+  /// Badge — Inter Tight SemiBold 10 / 18, 2% tracking (e.g. "URGENT").
+  static TextStyle get badge => GoogleFonts.interTight(
+        fontSize: 10,
+        fontWeight: FontWeight.w600,
+        height: 18 / 10,
+        letterSpacing: 0.2,
+        color: AppColors.headingBlack,
+      );
+
   /// Small text/Regular — Inter Tight Regular 12 / 18, 3% tracking.
   static TextStyle get smallRegular => GoogleFonts.interTight(
         fontSize: 12,

@@ -1,22 +1,10 @@
-/// View models for the Home / Shopping page.
-///
-/// These are shaped for the screen, not the API — map backend responses into
-/// them in the data layer.
+/// View models for the Home / Shopping page, built from [PearRepository].
 library;
 
-class Person {
-  const Person({
-    required this.id,
-    required this.name,
-    this.avatarUrl,
-    this.isMe = false,
-  });
+import '../../../data/models.dart';
+import '../../../data/pear_repository.dart';
 
-  final String id;
-  final String name;
-  final String? avatarUrl;
-  final bool isMe;
-}
+export '../../../data/models.dart' show Activity, Person;
 
 /// The list shown in the big card at the top of Home.
 class ActiveList {
@@ -31,29 +19,21 @@ class ActiveList {
   final String id;
   final String name;
 
-  /// Everyone with access to the list, including the current user.
+  /// Everyone who can see the list, including the current user.
   final List<Person> members;
 
-  /// First few unchecked item names, e.g. "Bananas, Oat milk, Greek yogurt".
+  /// First few item names still to buy, e.g. "Bananas, Oat milk, …".
   final List<String> previewItems;
-  final int totalItems;
 
-  bool get isEmpty => totalItems == 0;
-  int get moreCount =>
-      (totalItems - previewItems.length).clamp(0, totalItems).toInt();
+  /// Items still to buy.
+  final int totalItems;
 
   /// Max names shown in the card before "+N more".
   static const int previewLimit = 3;
 
-  ActiveList withItemAdded(String itemName) => ActiveList(
-        id: id,
-        name: name,
-        members: members,
-        previewItems: previewItems.length < previewLimit
-            ? [...previewItems, itemName]
-            : previewItems,
-        totalItems: totalItems + 1,
-      );
+  bool get isEmpty => totalItems == 0;
+  int get moreCount =>
+      (totalItems - previewItems.length).clamp(0, totalItems).toInt();
 }
 
 enum ListIcon { list, lock }
@@ -85,21 +65,11 @@ class ListTemplate {
   final ListIcon icon;
 }
 
-class Activity {
-  const Activity({
-    required this.id,
-    required this.actor,
-    required this.description,
-    required this.at,
-  });
-
-  final String id;
-  final Person actor;
-
-  /// Full sentence, e.g. "Sam added Olive oil".
-  final String description;
-  final DateTime at;
-}
+const List<ListTemplate> kListTemplates = [
+  ListTemplate(name: 'Grocery list'),
+  ListTemplate(name: 'Party list'),
+  ListTemplate(name: 'Personal list', icon: ListIcon.lock),
+];
 
 class HomeData {
   const HomeData({
@@ -110,6 +80,46 @@ class HomeData {
     this.stores = const [],
   });
 
+  /// Builds the Home view from the repository. Returns null when the user
+  /// has no shopping list yet.
+  static HomeData? fromRepository(PearRepository repo) {
+    final home = repo.homeList;
+    if (home == null) return null;
+
+    final toBuy = home.toBuy;
+    final others = repo.lists
+        .where((l) => l.kind == ListKind.shopping && l.id != home.id)
+        .map(
+          (l) => ListSummary(
+            id: l.id,
+            name: l.name,
+            itemCount: l.toBuy.length,
+            members: l.activeMembers,
+            // A lock only means something when sharing is possible.
+            icon: l.activeMembers.length == 1 && repo.partner != null
+                ? ListIcon.lock
+                : ListIcon.list,
+          ),
+        )
+        .toList();
+
+    return HomeData(
+      activeList: ActiveList(
+        id: home.id,
+        name: home.name,
+        members: home.activeMembers,
+        previewItems: [
+          for (final item in toBuy.take(ActiveList.previewLimit)) item.name,
+        ],
+        totalItems: toBuy.length,
+      ),
+      otherLists: others,
+      templates: others.isEmpty ? kListTemplates : const [],
+      activities: repo.activities,
+      stores: [...home.stores, kAnyStore],
+    );
+  }
+
   final ActiveList activeList;
   final List<ListSummary> otherLists;
   final List<ListTemplate> templates;
@@ -117,28 +127,4 @@ class HomeData {
 
   /// Options for the "Store" dropdown when adding an item.
   final List<String> stores;
-
-  /// Local update after the current user adds an item to the active list.
-  HomeData withItemAdded(String itemName, {DateTime? at}) {
-    final me = activeList.members.firstWhere(
-      (p) => p.isMe,
-      orElse: () => const Person(id: 'me', name: 'You', isMe: true),
-    );
-    final when = at ?? DateTime.now();
-    return HomeData(
-      activeList: activeList.withItemAdded(itemName),
-      otherLists: otherLists,
-      templates: templates,
-      stores: stores,
-      activities: [
-        Activity(
-          id: 'local-${when.microsecondsSinceEpoch}',
-          actor: me,
-          description: 'You added $itemName',
-          at: when,
-        ),
-        ...activities,
-      ],
-    );
-  }
 }
