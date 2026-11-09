@@ -10,7 +10,10 @@ import 'splash_timeline.dart';
 /// One frame of the splash animation at time [t] (seconds).
 ///
 /// Everything is laid out on the 393 x 852 design canvas, exactly as in the
-/// Figma frame, and the canvas is scaled to cover the screen.
+/// Figma frame. On phones the canvas is scaled to cover the screen. On
+/// wider screens (tablets, landscape) it's scaled to fit the height instead
+/// — covering would blow the card up and crop the pear — and the branch,
+/// which runs edge to edge on a phone, fades out at the canvas sides.
 class SplashScene extends StatelessWidget {
   const SplashScene({super.key, required this.t});
 
@@ -23,25 +26,31 @@ class SplashScene extends StatelessWidget {
   Widget build(BuildContext context) {
     return ColoredBox(
       color: AppColors.background,
-      child: SizedBox.expand(
-        child: FittedBox(
-          fit: BoxFit.cover,
-          child: SizedBox(
-            width: canvasWidth,
-            height: canvasHeight,
-            child: MediaQuery.withNoTextScaling(
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  _glow(),
-                  _branch(),
-                  _pear(),
-                  _card(),
-                ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = constraints.maxWidth / constraints.maxHeight >
+              canvasWidth / canvasHeight;
+          return SizedBox.expand(
+            child: FittedBox(
+              fit: wide ? BoxFit.contain : BoxFit.cover,
+              child: SizedBox(
+                width: canvasWidth,
+                height: canvasHeight,
+                child: MediaQuery.withNoTextScaling(
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      _glow(),
+                      _branch(fadeEnds: wide),
+                      _pear(),
+                      _card(),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -59,16 +68,31 @@ class SplashScene extends StatelessWidget {
   }
 
   // -------------------------------------------------------------- branch
-  Widget _branch() {
+  Widget _branch({required bool fadeEnds}) {
     final opacity = SplashTimeline.branchOpacity.at(t).clamp(0.0, 1.0);
+    Widget branch = Transform.translate(
+      offset: Offset(0, SplashTimeline.branchDy.at(t)),
+      child: const _CanvasSvg('assets/splash/branch.svg'),
+    );
+    if (fadeEnds) {
+      // The art stops at the canvas edges, which are inside the screen
+      // here; soften them so the branch trails off instead of being cut.
+      branch = ShaderMask(
+        blendMode: BlendMode.dstIn,
+        shaderCallback: (rect) => const LinearGradient(
+          colors: [
+            Color(0x00000000),
+            Color(0xFF000000),
+            Color(0xFF000000),
+            Color(0x00000000),
+          ],
+          stops: [0, 0.18, 0.82, 1],
+        ).createShader(rect),
+        child: branch,
+      );
+    }
     return Positioned.fill(
-      child: Opacity(
-        opacity: opacity,
-        child: Transform.translate(
-          offset: Offset(0, SplashTimeline.branchDy.at(t)),
-          child: const _CanvasSvg('assets/splash/branch.svg'),
-        ),
-      ),
+      child: Opacity(opacity: opacity, child: branch),
     );
   }
 
