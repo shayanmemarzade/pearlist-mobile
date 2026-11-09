@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import 'snap_away.dart';
 
 /// White rounded container with a light border (Figma: "Select container").
 class AppCard extends StatelessWidget {
@@ -46,4 +47,52 @@ class AppDivider extends StatelessWidget {
       child: ColoredBox(color: AppColors.borderGrayLight),
     );
   }
+}
+
+/// 16px · hairline · 16px between rows in a card. Set [closing] to fold it
+/// away in step with a [SnapAway] (when the row next to it crumbles).
+class RowDivider extends StatelessWidget {
+  const RowDivider({super.key, this.closing = false});
+
+  final bool closing;
+
+  /// 16 + 1 + 16.
+  static const double height = 33;
+
+  @override
+  Widget build(BuildContext context) {
+    // A row being dragged leaves its divider behind (see [RowDragProxy]).
+    if (RowDragProxy.isIn(context)) return const SizedBox.shrink();
+    return AnimatedSize(
+      duration: SnapAway.duration,
+      curve: SnapAway.collapseCurve,
+      alignment: Alignment.topCenter,
+      child: closing
+          ? const SizedBox(width: double.infinity)
+          : const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(height: 16),
+                AppDivider(),
+                SizedBox(height: 16),
+              ],
+            ),
+    );
+  }
+}
+
+/// Marks the floating copy of a row while it's dragged in a
+/// [ReorderableListView], so its [RowDivider] isn't carried along.
+class RowDragProxy extends InheritedWidget {
+  const RowDragProxy({super.key, required super.child});
+
+  // `depend…` rather than `get…`: the list moves the row's existing
+  // widgets into the drag overlay (they're under a GlobalKey) instead of
+  // building new ones, and only a registered dependency makes them rebuild
+  // when they land under (or leave) this widget.
+  static bool isIn(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<RowDragProxy>() != null;
+
+  @override
+  bool updateShouldNotify(RowDragProxy oldWidget) => false;
 }

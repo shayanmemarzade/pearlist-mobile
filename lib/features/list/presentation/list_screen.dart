@@ -42,6 +42,9 @@ class _ListScreenState extends State<ListScreen> {
   String? _store;
   bool _showBought = false;
 
+  /// Items crumbling away after being checked off.
+  final Set<String> _snapping = {};
+
   PearRepository get _repo => PearScope.read(context);
 
   double get _toastOffset => AppBottomBar.heightOf(context) + 8;
@@ -232,7 +235,12 @@ class _ListScreenState extends State<ListScreen> {
               reorderable: store == null,
               onReorderItem: (from, to) =>
                   repo.moveItem(list.id, group.aisle, from, to),
-              onCheck: (item) => repo.setBought(list.id, item.id, bought: true),
+              snapping: _snapping,
+              onCheck: (item) => setState(() => _snapping.add(item.id)),
+              onSnapped: (item) {
+                setState(() => _snapping.remove(item.id));
+                repo.setBought(list.id, item.id, bought: true);
+              },
               onOpen: (item) => _openItem(list, item),
             ),
           ),

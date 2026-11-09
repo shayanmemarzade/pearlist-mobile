@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/snap_away.dart';
 import '../../../../data/models.dart';
 import 'item_row.dart';
 
@@ -17,7 +18,14 @@ class AisleSection extends StatelessWidget {
     required this.onReorderItem,
     required this.onCheck,
     required this.onOpen,
+    this.snapping = const {},
+    this.onSnapped,
   });
+
+  /// Ids of items being checked off; they crumble away ([SnapAway]) and
+  /// then [onSnapped] moves them to Bought.
+  final Set<String> snapping;
+  final ValueChanged<ShoppingItem>? onSnapped;
 
   final String aisle;
   final List<ShoppingItem> items;
@@ -55,22 +63,28 @@ class AisleSection extends StatelessWidget {
             proxyDecorator: _proxy,
             itemBuilder: (context, i) {
               final item = items[i];
-              return Column(
+              final going = snapping.contains(item.id);
+              // The first row has no divider above it, so when it goes the
+              // next row's divider closes with it instead.
+              final dividerGoes = i == 1 && snapping.contains(items[0].id);
+              return KeyedSubtree(
                 key: ValueKey(item.id),
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (i > 0) ...const [
-                    SizedBox(height: 16),
-                    AppDivider(),
-                    SizedBox(height: 16),
-                  ],
-                  ItemRow(
-                    item: item,
-                    dragIndex: reorderable ? i : null,
-                    onCheck: (_) => onCheck(item),
+                child: SnapAway(
+                  snapping: going,
+                  onSnapped: () => onSnapped?.call(item),
+                  above: i == 0 ? null : RowDivider(closing: dividerGoes),
+                  child: ItemRow(
+                    // Shown ticked and struck through while it crumbles.
+                    item: going
+                        ? item.copyWith(boughtAt: () => DateTime.now())
+                        : item,
+                    dragIndex: reorderable && !going ? i : null,
+                    onCheck: (_) {
+                      if (!going) onCheck(item);
+                    },
                     onOpen: () => onOpen(item),
                   ),
-                ],
+                ),
               );
             },
           ),
@@ -80,17 +94,24 @@ class AisleSection extends StatelessWidget {
   }
 
   /// Lifts the dragged row on a white card instead of the default grey.
+  /// The divider above the row stays in the list: it's hidden in the
+  /// floating copy, and the copy is pushed down by its height so the row
+  /// stays under the finger.
   static Widget _proxy(Widget child, int index, Animation<double> animation) {
     return AnimatedBuilder(
       animation: animation,
-      builder: (context, child) => Material(
-        color: AppColors.surfaceForeground,
-        elevation: 6 * Curves.easeOut.transform(animation.value),
-        shadowColor: AppColors.shadowMedium,
-        borderRadius: const BorderRadius.all(Radius.circular(12)),
-        child: child,
+      builder: (context, child) => Padding(
+        padding: EdgeInsets.only(top: index == 0 ? 0 : RowDivider.height),
+        child: Material(
+          color: AppColors.surfaceForeground,
+          elevation: 6 * Curves.easeOut.transform(animation.value),
+          shadowColor: AppColors.shadowMedium,
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          child: child,
+        ),
       ),
-      child: child,
+      child: RowDragProxy(child: child),
     );
   }
 }
+

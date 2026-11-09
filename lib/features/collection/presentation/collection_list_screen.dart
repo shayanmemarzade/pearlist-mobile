@@ -7,6 +7,7 @@ import '../../../core/widgets/app_bottom_bar.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_toast.dart';
+import '../../../core/widgets/snap_away.dart';
 import '../../../core/widgets/confirm_sheet.dart';
 import '../../../data/models.dart';
 import '../../../data/pear_repository.dart';
@@ -42,6 +43,10 @@ class _CollectionListScreenState extends State<CollectionListScreen> {
   bool _showBought = false;
   bool _showSecret = false;
 
+  /// Entries crumbling away after being checked off, with whether the wish
+  /// was bought secretly.
+  final Map<String, bool> _snapping = {};
+
   PearRepository get _repo => PearScope.read(context);
 
   double get _toastOffset => AppBottomBar.heightOf(context) + 8;
@@ -61,14 +66,20 @@ class _CollectionListScreenState extends State<CollectionListScreen> {
 
   /// Checking a wish asks whether it's a surprise; places are just visited.
   Future<void> _markDone(ShoppingList list, ShoppingItem item) async {
-    final repo = _repo;
     if (list.kind != ListKind.wishlist) {
-      repo.setBought(list.id, item.id, bought: true);
+      setState(() => _snapping[item.id] = false);
       return;
     }
     final secretly = await showMarkBoughtSheet(context);
     if (secretly == null || !mounted) return;
-    repo.setBought(list.id, item.id, bought: true, secretly: secretly);
+    setState(() => _snapping[item.id] = secretly);
+  }
+
+  /// End of the crumble: now it really moves to Bought / Visited.
+  void _snapped(ShoppingList list, ShoppingItem item) {
+    final secretly = _snapping[item.id] ?? false;
+    setState(() => _snapping.remove(item.id));
+    _repo.setBought(list.id, item.id, bought: true, secretly: secretly);
   }
 
   void _remove(ShoppingList list, ShoppingItem item) {
@@ -317,14 +328,30 @@ class _CollectionListScreenState extends State<CollectionListScreen> {
             child: AppCard(
               child: Column(
                 children: [
-                  for (var i = 0; i < open.length; i++) ...[
-                    if (i > 0) ...const [
-                      SizedBox(height: 16),
-                      AppDivider(),
-                      SizedBox(height: 16),
-                    ],
-                    row(open[i]),
-                  ],
+                  for (var i = 0; i < open.length; i++)
+                    SnapAway(
+                      key: ValueKey(open[i].id),
+                      snapping: _snapping.containsKey(open[i].id),
+                      onSnapped: () => _snapped(list, open[i]),
+                      above: i == 0
+                          ? null
+                          : RowDivider(
+                              // The first row has no divider above; the
+                              // next row's one closes with it instead.
+                              closing: i == 1 &&
+                                  _snapping.containsKey(open[0].id),
+                            ),
+                      child: _snapping.containsKey(open[i].id)
+                          // Ticked and struck through while it crumbles.
+                          ? IgnorePointer(
+                              child: row(
+                                open[i].copyWith(
+                                  boughtAt: () => DateTime.now(),
+                                ),
+                              ),
+                            )
+                          : row(open[i]),
+                    ),
                 ],
               ),
             ),
