@@ -26,7 +26,7 @@ class PhoneField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppPillField(
-      hint: '+1 (555) 000-0000',
+      hint: '(555) 000-0000',
       controller: controller,
       error: error,
       autofocus: true,
